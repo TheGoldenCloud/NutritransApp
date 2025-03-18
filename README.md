@@ -1,2 +1,4 @@
 # NutritransApp
-Official sorce code of Nutritrans
+
+- Official sorce code of Nutritrans
+- Odavde izmas kod
