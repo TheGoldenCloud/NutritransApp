@@ -369,7 +369,6 @@ passport.use(
           });
 
           const mailOptions = {
-            //work here
             from: "office@nutritrans.com",
             to: profile.emails[0].value,
             subject: "Registracija profila",
@@ -8856,6 +8855,7 @@ app.get("/octopus", async (req, res) => {
   }
 });
 
+//Za test srvera!
 app.get("/servertest", (req, res) => {
   // res.json({ message: "Server up!" });
   res.send("<h1>Test za Nutritrans DEV uspeo, server je podignut</h1>");
