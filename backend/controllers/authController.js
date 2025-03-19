@@ -29,8 +29,7 @@ const login = async (req, res) => {
 
   const match = await bcrypt.compare(password, foundUser.password);
 
-  if (!match)
-    return res.status(401).json({ message: "Pogrešna lozinka" });
+  if (!match) return res.status(401).json({ message: "Pogrešna lozinka" });
 
   const accessToken = jwt.sign(
     {
@@ -52,14 +51,14 @@ const login = async (req, res) => {
   );
 
   //Svaki put kad se neko uloguje onda se proverava da li postoji neki patek sa Datum placanja = null ili "Pending"
-  //da bi ocistili bazi 
-  Paket.deleteMany({ status_placanja: 'Pending' })
-  .then(result => {
-    console.log(`${result.deletedCount} paketa su obrisana.`);
-  })
-  .catch(err => {
-    console.error('Greška pri brisanju paketa:', err);
-  });
+  //da bi ocistili bazi
+  Paket.deleteMany({ status_placanja: "Pending" })
+    .then((result) => {
+      console.log(`${result.deletedCount} paketa su obrisana.`);
+    })
+    .catch((err) => {
+      console.error("Greška pri brisanju paketa:", err);
+    });
 
   res.cookie("jwt", refreshToken, {
     httpOnly: true, //accessible only by web server
@@ -165,7 +164,7 @@ const login = async (req, res) => {
 //     const userObject = { mail: email, password: hashedPassword, isVerified: false };
 
 //     const user = await User.create(userObject);
-    
+
 //     const verificationToken = jwt.sign(
 //       { userId: user._id },
 //       process.env.JWT_SECRET,
@@ -216,7 +215,7 @@ const login = async (req, res) => {
 //   }
 // };
 
-const register = async (req, res) => { 
+const register = async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
 
@@ -232,15 +231,23 @@ const register = async (req, res) => {
 
     if (duplicate) {
       if (duplicate.isVerified) {
-        return res.status(409).json({ message: "Korisnik već postoji i verifikovan je" });
+        return res
+          .status(409)
+          .json({ message: "Korisnik već postoji i verifikovan je" });
       } else {
-        return res.status(409).json({ message: "Korisnik postoji, ali nije verifikovan" });
+        return res
+          .status(409)
+          .json({ message: "Korisnik postoji, ali nije verifikovan" });
       }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const userObject = { mail: email, password: hashedPassword, isVerified: false };
+    const userObject = {
+      mail: email,
+      password: hashedPassword,
+      isVerified: false,
+    };
 
     //Creating user
     const user = await User.create(userObject);
@@ -248,7 +255,7 @@ const register = async (req, res) => {
     //Creating base paket
     const paketObjekat = {
       orgderId: "",
-      naziv_paketa: "Starter",  // Svi novi useri ce imati starter paket
+      naziv_paketa: "Starter", // Svi novi useri ce imati starter paket
       cena: 0,
       valuta: "RSD",
       status_placanja: "Plaćeno",
@@ -256,7 +263,7 @@ const register = async (req, res) => {
       tip: "",
       broj: {
         full: "1",
-        base: "0"
+        base: "0",
       },
       datum_kreiranja: new Date(),
       datum_isteka: new Date(new Date().setMonth(new Date().getMonth() + 1)),
@@ -267,12 +274,12 @@ const register = async (req, res) => {
       metoda_placanja: "",
       TransId: "",
       recurringID: "",
-      userMail: user.mail
+      userMail: user.mail,
     };
-    
+
     //Radi ok!
-    const paket =  await Paket.create(paketObjekat);
-    
+    const paket = await Paket.create(paketObjekat);
+
     const verificationToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
@@ -321,12 +328,43 @@ const register = async (req, res) => {
       if (error) {
         return res.status(400).json({ message: "Nije uspelo slanje na mail" });
       } else {
-        console.log("Email poslat: " + info.response);
+        console.log("Email za verifikaciju poslat:", info.response);
+
+        // Drugi email - saljemo pdf...
+        const secondMailOptions = {
+          from: "office@nutritrans.com",
+          to: profile.emails[0].value,
+          subject: "Propratne informacije",
+          html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 40px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); max-width: 600px; margin: auto;">
+                <img src="https://nutritrans.rs:5000/logoo.png" alt="Nutrition Transformation Logo" style="max-width: 150px; margin-bottom: 20px;">
+                <h1 style="color: #333; font-size: 28px;">📃 Uputstvo za Nutri Trans! 📃</h1>
+                <p style="color: #555; font-size: 18px;">U prilogu Vam šaljemo PDF dokument vezan za Nutri Trans aplikaciju. Molimo Vas da ga pregledate i javite nam ako imate bilo kakvih pitanja ili potrebna dodatna pojašnjenja.</p>
+                
+                <p style="color: #999; font-size: 12px; margin-top: 20px;">Molimo Vas da ne odgovarate na ovaj email. Hvala na poverenju! 🚀</p>
+            </div>`,
+          attachments: [
+            {
+              filename: "vodic.pdf",
+              path: "./vodic.pdf",
+              contentType: "application/pdf",
+            },
+          ],
+        };
+
+        transporter.sendMail(secondMailOptions, (err, info) => {
+          if (err) {
+            console.error("Greška pri slanju drugog email-a:", err);
+          } else {
+            console.log("Drugi email poslat sa PDF prilogom:", info.response);
+          }
+        });
       }
     });
 
     if (user) {
-      res.status(201).json({ message: `Novi user sa emailom ${email} napravljen` });
+      res
+        .status(201)
+        .json({ message: `Novi user sa emailom ${email} napravljen` });
     } else {
       res.status(400).json({ message: "Ne validni podatci dobijeni" });
     }
@@ -335,7 +373,6 @@ const register = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 const forgot_password = async (req, res) => {
   const { email } = req.body;
@@ -401,7 +438,9 @@ const forgot_password = async (req, res) => {
         // console.log(error);
         res.status(400).json({ message: `Nije uspelo slanje na mail` });
       } else {
-        res.status(200).json({ message: `Resetovanje lozinke poslato na ${email}` });
+        res
+          .status(200)
+          .json({ message: `Resetovanje lozinke poslato na ${email}` });
         // console.log("Email sent: " + info.response);
       }
     });
@@ -482,7 +521,8 @@ const refresh = (req, res) => {
         mail: decoded.email,
       }).exec();
 
-      if (!foundUser) return res.status(401).json({ message: "Korisnik nije nadjen" });
+      if (!foundUser)
+        return res.status(401).json({ message: "Korisnik nije nadjen" });
 
       const accessToken = jwt.sign(
         {

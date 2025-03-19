@@ -369,6 +369,7 @@ passport.use(
           });
 
           const mailOptions = {
+            //work here
             from: "office@nutritrans.com",
             to: profile.emails[0].value,
             subject: "Registracija profila",
@@ -396,7 +397,39 @@ passport.use(
             if (err) {
               console.error("Greška pri slanju email-a:", err);
             } else {
-              console.log("Email poslat:", info.response);
+              console.log("Email za verifikaciju poslat:", info.response);
+
+              // Drugi email - saljemo pdf...
+              const secondMailOptions = {
+                from: "office@nutritrans.com",
+                to: profile.emails[0].value,
+                subject: "Propratne informacije",
+                html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 40px; background-color: #f9f9f9; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); max-width: 600px; margin: auto;">
+                      <img src="https://nutritrans.rs:5000/logoo.png" alt="Nutrition Transformation Logo" style="max-width: 150px; margin-bottom: 20px;">
+                      <h1 style="color: #333; font-size: 28px;">📃 Uputstvo za Nutri Trans! 📃</h1>
+                      <p style="color: #555; font-size: 18px;">U prilogu Vam šaljemo PDF dokument vezan za Nutri Trans aplikaciju. Molimo Vas da ga pregledate i javite nam ako imate bilo kakvih pitanja ili potrebna dodatna pojašnjenja.</p>
+                      
+                      <p style="color: #999; font-size: 12px; margin-top: 20px;">Molimo Vas da ne odgovarate na ovaj email. Hvala na poverenju! 🚀</p>
+                  </div>`,
+                attachments: [
+                  {
+                    filename: "vodic.pdf",
+                    path: "./vodic.pdf",
+                    contentType: "application/pdf",
+                  },
+                ],
+              };
+
+              transporter.sendMail(secondMailOptions, (err, info) => {
+                if (err) {
+                  console.error("Greška pri slanju drugog email-a:", err);
+                } else {
+                  console.log(
+                    "Drugi email poslat sa PDF prilogom:",
+                    info.response
+                  );
+                }
+              });
             }
           });
         }
@@ -3900,14 +3933,17 @@ app.use("/test2", async (req, res) => {
         value: Math.round(data_.ukupnaKalVred),
         icon: "public/pdficons/calories-calculator.png",
       },
-      BMI: { value: Math.round(data_.bmi), icon: "public/pdficons/bmi1.png" },
+      "TDEE (kcal) - Ukupna dnevna potrošnja energije": {
+        value: Math.round(data_.tdee),
+        icon: "public/pdficons/mojb.png",
+      },
       "BMR (kcal) - Bazalni metabolizam": {
         value: Math.round(data_.bmrValue),
         icon: "public/pdficons/cleanbmr.png",
       },
-      "TDEE (kcal) - Ukupna dnevna potrošnja energije": {
-        value: Math.round(data_.tdee),
-        icon: "public/pdficons/mojb.png",
+      "BMI - Indeks telesne mase": {
+        value: Math.round(data_.bmi),
+        icon: "public/pdficons/bmi1.png",
       },
     };
 
@@ -8855,10 +8891,8 @@ app.get("/octopus", async (req, res) => {
   }
 });
 
-//Za test srvera!
-app.get("/servertest", (req, res) => {
-  // res.json({ message: "Server up!" });
-  res.send("<h1>Test za Nutritrans DEV uspeo, server je podignut</h1>");
+app.get("/about", (req, res) => {
+  res.json({ message: "Server up!" });
 });
 
 //
@@ -8915,10 +8949,11 @@ let add = async () => {
 
 //==== TESTS ====
 
-//Promeni ovo!
 const sslOptions = {
-  key: fs.readFileSync("/etc/letsencrypt/live/nutritrans.rs/privkey.pem"), // Putanja gde je privatan key
-  cert: fs.readFileSync("/etc/letsencrypt/live/nutritrans.rs/fullchain.pem"), // Putanja gde je sertifikat
+  key: fs.readFileSync("/etc/letsencrypt/live/dev.nutritrans.rs/privkey.pem"), // Path to your private key
+  cert: fs.readFileSync(
+    "/etc/letsencrypt/live/dev.nutritrans.rs/fullchain.pem"
+  ), // Path to your certificate
 };
 
 //SA HTTPS
