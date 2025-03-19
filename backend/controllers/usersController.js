@@ -339,7 +339,8 @@ const updateUser = async (req, res) => {
     kolicinaCigara,
     selectedDefTip,
     allergiesEnabled,
-    allergyChoice
+    allergyChoice,
+    highlighted
   } = req.body;
 
   // console.log("Podaci podlsti: ", req.body);
@@ -391,6 +392,7 @@ const updateUser = async (req, res) => {
     user.selectedDefTip = selectedDefTip;
     user.allergyChoice = allergyChoice;
     user.allergiesEnabled = allergiesEnabled;
+    user.wellcomePanel = highlighted;
 
     // Save the updated user
     const updatedUser = await user.save();
