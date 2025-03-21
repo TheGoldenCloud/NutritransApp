@@ -8949,30 +8949,30 @@ let add = async () => {
 
 //==== TESTS ====
 
-// const sslOptions = {
-//   key: fs.readFileSync("/etc/letsencrypt/live/dev.nutritrans.rs/privkey.pem"), // Path to your private key
-//   cert: fs.readFileSync(
-//     "/etc/letsencrypt/live/dev.nutritrans.rs/fullchain.pem"
-//   ), // Path to your certificate
-// };
+const sslOptions = {
+  key: fs.readFileSync("/etc/letsencrypt/live/dev.nutritrans.rs/privkey.pem"), // Path to your private key
+  cert: fs.readFileSync(
+    "/etc/letsencrypt/live/dev.nutritrans.rs/fullchain.pem"
+  ), // Path to your certificate
+};
 
 //SA HTTPS
-// mongoose.connection.once("open", () => {
-//   console.log("Connected to MongoDB!");
-//   // Start HTTPS server
-//   https.createServer(sslOptions, app).listen(PORT, () => {
-//     console.log(`HTTPS server running on port ${PORT}`);
-//   });
-// });
-
-//BEZ HTTPS
 mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDB");
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    // add();
+  console.log("Connected to MongoDB!");
+  // Start HTTPS server
+  https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`HTTPS server running on port ${PORT}`);
   });
 });
+
+//BEZ HTTPS
+// mongoose.connection.once("open", () => {
+//   console.log("Connected to MongoDB");
+//   app.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//     // add();
+//   });
+// });
 
 mongoose.connection.on("error", (err) => {
   console.log(err);
