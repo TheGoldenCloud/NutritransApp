@@ -6677,13 +6677,13 @@ app.post("/generate-payment-form", async (req, res) => {
       .map(() => ((Math.random() * 36) | 0).toString(36))
       .join("");
 
-    const clientId = "13IN003415";
+    const clientId = process.env.MERCHENT_ID;
     const oid = orderId || "";
     const aAmount = amount || "";
     const trantype = "Auth";
     const rnd = randomString;
     const currency = "941";
-    const storeKey = "Nutritrans01";
+    const storeKey = process.env.STORE_KEY;
     const storeType = "3d_pay_hosting";
     const lang = "sr";
     const hashAlgorithm = "ver2";
@@ -6710,7 +6710,7 @@ app.post("/generate-payment-form", async (req, res) => {
       .digest("hex");
     const hash = Buffer.from(hashValue, "hex").toString("base64");
 
-    const payURL = "https://testsecurepay.eway2pay.com/fim/est3Dgate";
+    const payURL = process.env.BANCA_API;
 
     let noviPaket = null;
     if (foundUser) {
@@ -8950,10 +8950,8 @@ let add = async () => {
 //==== TESTS ====
 
 const sslOptions = {
-  key: fs.readFileSync("/etc/letsencrypt/live/dev.nutritrans.rs/privkey.pem"), // Path to your private key
-  cert: fs.readFileSync(
-    "/etc/letsencrypt/live/dev.nutritrans.rs/fullchain.pem"
-  ), // Path to your certificate
+  key: fs.readFileSync("/etc/letsencrypt/live/nutritrans.rs/privkey.pem"), // Path to your private key
+  cert: fs.readFileSync("/etc/letsencrypt/live/nutritrans.rs/fullchain.pem"), // Path to your certificate
 };
 
 //SA HTTPS
